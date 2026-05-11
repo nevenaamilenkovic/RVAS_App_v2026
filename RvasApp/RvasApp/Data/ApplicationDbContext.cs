@@ -18,17 +18,25 @@ namespace RvasApp.Data
         public DbSet<Komentar> Komentari { get; set; }
 
 
-        //pri uklanjanju kursa -> ispisuju se i svi polaznici sa tog kursa
-        //postavljanje pravila stranog kljuca! nakon ovoga obavezno add-migration i update-database
-        //protected override void OnModelCreating(ModelBuilder builder)
-        //{
-        //    base.OnModelCreating(builder);
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            //pri uklanjanju kursa -> ispisuju se i svi polaznici sa tog kursa
+            //postavljanje pravila stranog kljuca! nakon ovoga obavezno add-migration i update-database
 
-        //    builder.Entity<Prijava>()
-        //        .HasOne(p => p.Kurs)
-        //        .WithMany(k => k.Prijave)
-        //        .HasForeignKey(p => p.KursId)
-        //        .OnDelete(DeleteBehavior.Cascade);
-        //}
+            //builder.Entity<Prijava>()
+            //    .HasOne(p => p.Kurs)
+            //    .WithMany(k => k.Prijave)
+            //    .HasForeignKey(p => p.KursId)
+            //    .OnDelete(DeleteBehavior.Cascade);
+
+            //na postu je podrazumevan delete behavior cascade, dakle uklanjanjem posta, brisu se i svi komentari vezani za isti
+            //prilikom brisanja korisnickog naloga komentari tog korisnika ostaju!
+            builder.Entity<Komentar>()
+                .HasOne(k => k.Korisnik)
+                .WithMany()
+                .HasForeignKey(k => k.KorisnikId)
+                .OnDelete(DeleteBehavior.NoAction);
+        }
     }
 }
