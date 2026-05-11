@@ -15,6 +15,7 @@ namespace RvasApp.Data
         public DbSet<Lekcija> Lekcije {  get; set; }
         public DbSet<LekcijaMaterijali> Materijali {  get; set; }
         public DbSet<Post> Postovi { get; set; }
+        public DbSet<Komentar> Komentari { get; set; }
 
 
         //pri uklanjanju kursa -> ispisuju se i svi polaznici sa tog kursa

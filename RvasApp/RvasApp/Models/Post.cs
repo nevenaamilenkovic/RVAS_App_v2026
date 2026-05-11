@@ -10,5 +10,8 @@
 
         public string? KorisnikId { get; set; }
         public Korisnik? Korisnik { get; set; }
+
+        //komentari na postu
+        public List<Komentar> Komentari { get; set; } = new();
     }
 }
