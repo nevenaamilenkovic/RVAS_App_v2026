@@ -3,20 +3,43 @@
     ViewData["Title"] = "Novi post";
 }
 
-<h1>Kreiraj objavu</h1>
-
-<form asp-action="Objavi" method="post">
-    <div class="mb-3">
-        <label asp-for="Naslov" class="form-label fw-bold"></label>
-        <input asp-for="Naslov" class="form-control" placeholder="Unesi naslov posta" />
-        <span asp-validation-for="Naslov" class="text-danger"></span>
+<div class="container px-0">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+        <div class="min-w-0">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Nazad</a>
+                <span class="text-muted small">Blog / Nova objava</span>
+            </div>
+            <h1 class="h3 mb-0">Kreiraj objavu</h1>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label asp-for="Sadrzaj" class="form-label fw-bold"></label>
-        <textarea asp-for="Sadrzaj" class="form-control" rows="4"
-                  placeholder="Sadrzaj objave..."></textarea>
-        <span asp-validation-for="Sadrzaj" class="text-danger"></span>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Objavi" method="post" class="vstack gap-3">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div>
+                    <label asp-for="Naslov" class="form-label fw-semibold"></label>
+                    <input asp-for="Naslov" class="form-control" placeholder="Unesi naslov posta" />
+                    <div class="form-text">Kratko i jasno xD</div>
+                    <span asp-validation-for="Naslov" class="text-danger"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Sadrzaj" class="form-label fw-semibold"></label>
+                    <textarea asp-for="Sadrzaj"
+                              class="form-control"
+                              rows="8"
+                              placeholder="Napisi sadryaj objave..."></textarea>
+                    <span asp-validation-for="Sadrzaj" class="text-danger"></span>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-success">Objavi</button>
+                    <a asp-action="Index" class="btn btn-outline-secondary">Odustani</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <input type="submit" class="btn btn-outline-success" />
-</form>
+</div>
