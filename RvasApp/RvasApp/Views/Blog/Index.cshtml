@@ -1,0 +1,31 @@
+﻿@model IEnumerable<RvasApp.Models.Post>
+@{
+    ViewData["Title"] = "Blog";
+}
+
+<h1>Sve objave</h1>
+
+<a class="btn btn-success" asp-action="Objavi">Dodaj objavu</a>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Naslov</th>
+            <th>Datum kreiranja</th>
+            <th>Korisnik</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model)
+        {
+            <tr>
+                <td>@p.Naslov</td>
+                <td>@p.DatumKreiranja</td>
+                <td>@p.Korisnik.Email</td>
+                <td>
+                    <a asp-action="Objava" asp-route-id="@p.PostId" class="btn btn-warning">Opsirnije</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

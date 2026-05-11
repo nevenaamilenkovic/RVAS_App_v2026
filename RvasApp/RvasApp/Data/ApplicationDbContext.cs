@@ -14,6 +14,8 @@ namespace RvasApp.Data
         public DbSet<Prijava> Prijave {  get; set; }
         public DbSet<Lekcija> Lekcije {  get; set; }
         public DbSet<LekcijaMaterijali> Materijali {  get; set; }
+        public DbSet<Post> Postovi { get; set; }
+
 
         //pri uklanjanju kursa -> ispisuju se i svi polaznici sa tog kursa
         //postavljanje pravila stranog kljuca! nakon ovoga obavezno add-migration i update-database

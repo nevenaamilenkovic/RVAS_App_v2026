@@ -1,0 +1,22 @@
+﻿@model RvasApp.Models.Post
+@{
+    ViewData["Title"] = "Novi post";
+}
+
+<h1>Kreiraj objavu</h1>
+
+<form asp-action="Objavi" method="post">
+    <div class="mb-3">
+        <label asp-for="Naslov" class="form-label fw-bold"></label>
+        <input asp-for="Naslov" class="form-control" placeholder="Unesi naslov posta" />
+        <span asp-validation-for="Naslov" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Sadrzaj" class="form-label fw-bold"></label>
+        <textarea asp-for="Sadrzaj" class="form-control" rows="4"
+                  placeholder="Sadrzaj objave..."></textarea>
+        <span asp-validation-for="Sadrzaj" class="text-danger"></span>
+    </div>
+    <input type="submit" class="btn btn-outline-success" />
+</form>
