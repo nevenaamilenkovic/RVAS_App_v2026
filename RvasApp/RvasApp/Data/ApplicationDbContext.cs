@@ -37,6 +37,13 @@ namespace RvasApp.Data
                 .WithMany()
                 .HasForeignKey(k => k.KorisnikId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            //self reference za komentare!!
+            builder.Entity<Komentar>()
+                .HasOne(k => k.RoditeljskiKomentar)
+                .WithMany(k => k.Odgovori)
+                .HasForeignKey(k => k.RoditeljskiKomentarId)
+                .OnDelete(DeleteBehavior.NoAction);//mada bi bolje bilo cascade
         }
     }
 }

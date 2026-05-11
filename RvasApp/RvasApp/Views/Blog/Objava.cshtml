@@ -7,7 +7,7 @@
 {
     <div class="container px-0">
         <div class="alert alert-warning" role="alert">
-            Objava nije pronadjena.
+            Objava nije pronadjena
         </div>
         <a asp-action="Index" class="btn btn-outline-secondary">Nazad na listu</a>
     </div>
@@ -19,7 +19,7 @@ else
             <div class="min-w-0">
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <a asp-action="Index" class="btn btn-sm btn-outline-secondary">← Nazad</a>
-                    <span class="text-muted small">Forum / Objava</span>
+                    <span class="text-muted small">Blog / @Model.Naslov</span>
                 </div>
                 <h1 class="h3 mb-1 text-break">@Model.Naslov</h1>
                 <div class="text-muted small">
@@ -64,5 +64,39 @@ else
                 </div>
             </div>
         </div>
+
+
+        @* komentari *@
+        <h2 class="h5 mt-4">Komentari (@(Model.Komentari?.Count ?? 0))</h2>
+
+        @if (TempData["KomentarGreska"] != null)
+        {
+            <div class="alert alert-warning" role="alert">
+                @TempData["KomentarGreska"]
+            </div>
+        }
+
+        <form asp-action="DodajKomentar" method="post" class="mb-3">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="postId" value="@Model.PostId" />
+
+            <div class="mb-2">
+                <label for="komentarSadrzaj" class="form-label">Dodaj komentar</label>
+                <textarea id="komentarSadrzaj"
+                          name="sadrzaj"
+                          class="form-control"
+                          rows="3"
+                          placeholder="Napisi komentar..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Posalji</button>
+        </form>
+
+        @{
+            ViewData["Dubina"] = 0;
+            //ssamo jedan nivo odgovora (na glavni komentar)
+            ViewData["MaxDubina"] = 1;
+        }
+        <partial name="_Komentari" model="Model.Komentari" />
     </div>
 }

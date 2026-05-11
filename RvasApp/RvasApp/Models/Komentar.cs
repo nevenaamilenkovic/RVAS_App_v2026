@@ -15,5 +15,11 @@
         public int PostId { get; set; }
         public Post Post { get; set; }
 
+        //na koji komentar se odgovara (komentarom)
+        public int? RoditeljskiKomentarId { get; set; }
+        public Komentar? RoditeljskiKomentar { get; set; }
+        //jedan komentar moze imati vise odgovora
+        public List<Komentar> Odgovori { get; set; } = new();
+
     }
 }

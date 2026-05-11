@@ -61,12 +61,89 @@ namespace RvasApp.Controllers
             var objava = await _context.Postovi
                 //kako bi prikazivali autora
                 .Include(p => p.Korisnik)
+                //kako bi prikazivali i komentare
+                .Include(p=>p.Komentari)
+                    //i autora komentara
+                    .ThenInclude(k=>k.Korisnik)
                 .FirstOrDefaultAsync(p => p.PostId == id);
 
             if (objava == null)
                 return NotFound();
 
             return View(objava);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DodajKomentar(int postId, string sadrzaj)
+        {
+            if (postId <= 0)
+                return NotFound();
+
+            var post = await _context.Postovi.FirstOrDefaultAsync(p => p.PostId == postId);
+            if (post == null)
+                return NotFound();
+
+            if (string.IsNullOrWhiteSpace(sadrzaj))
+            {
+                TempData["KomentarGreska"] = "Komentar ne moze biti prazan";
+                return RedirectToAction(nameof(Objava), new { id = postId });
+            }
+
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var komentar = new Komentar
+            {
+                PostId = postId,
+                Sadrzaj = sadrzaj.Trim(),
+                DatumPostavljanja = DateTime.UtcNow,
+                KorisnikId = korisnikId
+            };
+
+            _context.Komentari.Add(komentar);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Objava), new { id = postId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> OdgovoriNaKomentar(int postId, int roditeljskiKomentarId, string sadrzaj)
+        {
+            if (postId <= 0 || roditeljskiKomentarId <= 0)
+                return NotFound();
+
+            var parent = await _context.Komentari.FirstOrDefaultAsync(k => k.KomentarId == roditeljskiKomentarId);
+            if (parent == null || parent.PostId != postId)
+                return NotFound();
+
+            if (parent.RoditeljskiKomentarId != null)
+            {
+                TempData["KomentarGreska"] = "jedan nivo odgovora!!";
+                return RedirectToAction(nameof(Objava), new { id = postId });
+            }
+
+            if (string.IsNullOrWhiteSpace(sadrzaj))
+            {
+                TempData["KomentarGreska"] = "Komentar ne moye biti prazan";
+                return RedirectToAction(nameof(Objava), new { id = postId });
+            }
+
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var komentar = new Komentar
+            {
+                PostId = postId,
+                RoditeljskiKomentarId = roditeljskiKomentarId,
+                Sadrzaj = sadrzaj.Trim(),
+                DatumPostavljanja = DateTime.UtcNow,
+                KorisnikId = korisnikId
+            };
+
+            _context.Komentari.Add(komentar);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Objava), new { id = postId });
         }
     }
 }

@@ -1,0 +1,59 @@
+﻿@* partial view za komentare! *@
+@model IEnumerable<RvasApp.Models.Komentar>
+
+@{
+    var dubina = ViewData["Dubina"] as int? ?? 0;
+    var maksimalnaDubina = ViewData["MaxDubina"] as int? ?? 1;
+}
+
+@if (Model == null || !Model.Any())
+{
+    <div class="text-muted">Jos nema komentara</div>
+}
+else
+{
+    <div class="list-group">
+        @foreach (var k in Model
+            .Where(x => (dubina == 0 && x.RoditeljskiKomentarId == null) || (dubina > 0))
+            .OrderByDescending(x => x.DatumPostavljanja))
+        {
+            <div class="list-group-item">
+                <div class="text-muted small mb-1">
+                    <strong>@(k.Korisnik?.Email ?? "Nepoznato")</strong>
+                    · @k.DatumPostavljanja.ToString("dd.MM.yyyy")
+                </div>
+                <div style="white-space: pre-wrap;">@k.Sadrzaj</div>
+
+                @if (dubina < maksimalnaDubina)
+                {
+                    <form asp-action="OdgovoriNaKomentar" method="post" class="mt-2">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="postId" value="@k.PostId" />
+                        <input type="hidden" name="roditeljskiKomentarId" value="@k.KomentarId" />
+
+                        <div class="mb-2">
+                            <textarea name="sadrzaj" class="form-control" rows="2" placeholder="Odgovori..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Odgovori</button>
+                    </form>
+
+                    var odgovori = Model.Where(x => x.RoditeljskiKomentarId == k.KomentarId).ToList();
+                    @if (odgovori.Any())
+                    {
+                        <div class="mt-2" style="margin-left: 20px;">
+                            @{
+                                var childKomentarViewData = new ViewDataDictionary(ViewData)
+                                {
+                                    ["Dubina"] = dubina + 1,
+                                    ["MaxDubina"] = maksimalnaDubina
+                                };
+                            }
+                            <partial name="_Komentari" model="odgovori" view-data="childKomentarViewData" />
+                        </div>
+                    }
+                }
+            </div>
+        }
+    </div>
+}
+

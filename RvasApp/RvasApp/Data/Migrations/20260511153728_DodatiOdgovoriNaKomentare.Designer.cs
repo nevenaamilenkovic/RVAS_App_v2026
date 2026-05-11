@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using RvasApp.Data;
 
@@ -11,9 +12,11 @@ using RvasApp.Data;
 namespace RvasApp.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260511153728_DodatiOdgovoriNaKomentare")]
+    partial class DodatiOdgovoriNaKomentare
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -501,8 +504,7 @@ namespace RvasApp.Data.Migrations
 
                     b.HasOne("RvasApp.Models.Komentar", "RoditeljskiKomentar")
                         .WithMany("Odgovori")
-                        .HasForeignKey("RoditeljskiKomentarId")
-                        .OnDelete(DeleteBehavior.NoAction);
+                        .HasForeignKey("RoditeljskiKomentarId");
 
                     b.Navigation("Korisnik");
 
