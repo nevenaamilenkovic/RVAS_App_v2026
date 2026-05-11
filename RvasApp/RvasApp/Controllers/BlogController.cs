@@ -59,7 +59,12 @@ namespace RvasApp.Controllers
             if (id == null)
                 return NotFound();
             var objava = await _context.Postovi
+                //kako bi prikazivali autora
+                .Include(p => p.Korisnik)
                 .FirstOrDefaultAsync(p => p.PostId == id);
+
+            if (objava == null)
+                return NotFound();
 
             return View(objava);
         }
