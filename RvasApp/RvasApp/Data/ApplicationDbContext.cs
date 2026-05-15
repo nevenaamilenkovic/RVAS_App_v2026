@@ -17,6 +17,7 @@ namespace RvasApp.Data
         public DbSet<Post> Postovi { get; set; }
         public DbSet<Komentar> Komentari { get; set; }
         public DbSet<Kategorija> Kategorije { get; set; }
+        public DbSet<PostVote> PostGlasovi { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -47,6 +48,23 @@ namespace RvasApp.Data
                 .OnDelete(DeleteBehavior.NoAction);//mada bi bolje bilo cascade
             //ovde je promenjen delete behavior na none, sto znaci
             //da ce program "puci", samim tim ne bi bilo lose da probate da rukujete rucno ovakvim izuzetkom
+
+            builder.Entity<PostVote>()
+                .HasOne(v => v.Post)
+                .WithMany(p => p.Glasovi)
+                .HasForeignKey(v => v.PostId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<PostVote>()
+                .HasOne(v => v.Korisnik)
+                .WithMany()
+                .HasForeignKey(v => v.KorisnikId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            //jedinstveni indeks samo jedan glas/vote moze po korisniku
+            builder.Entity<PostVote>()
+                .HasIndex(v => new { v.PostId, v.KorisnikId })
+                .IsUnique();
 
             //predefinisane kategorije
             //dodati migraciju nakon ovoga! pa tek onda update baze, ovo je jos jedan od nacina za pre-seed podataka

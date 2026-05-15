@@ -1,0 +1,22 @@
+@model RvasApp.Models.ViewModels.PostVoteViewModel
+@* partial za glasove *@
+@* radimo include gde god da je potrebno *@
+<div class="post-glasovi d-inline-flex align-items-center gap-1"
+     data-post-id="@Model.PostId">
+    <button type="button"
+            class="btn btn-sm post-glas-btn post-glas-up @(Model.UserVote == true ? "btn-success" : "btn-outline-success")"
+            data-vote="up"
+            title="Glasaj za"
+            aria-pressed="@(Model.UserVote == true ? "true" : "false")">
+        <span aria-hidden="true">▲</span>
+        <span class="post-upvote-count">@Model.Upvotes</span>
+    </button>
+    <button type="button"
+            class="btn btn-sm post-glas-btn post-glas-down @(Model.UserVote == false ? "btn-danger" : "btn-outline-danger")"
+            data-vote="down"
+            title="Glasaj protiv"
+            aria-pressed="@(Model.UserVote == false ? "true" : "false")">
+        <span aria-hidden="true">▼</span>
+        <span class="post-downvote-count">@Model.Downvotes</span>
+    </button>
+</div>

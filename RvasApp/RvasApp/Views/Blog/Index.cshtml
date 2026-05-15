@@ -1,9 +1,14 @@
 ﻿@model IEnumerable<RvasApp.Models.Post>
+@using RvasApp.Models.ViewModels
 @{
     ViewData["Title"] = "Blog";
+    //za prikaz pozitivnih/negativnih
+    var glasovi = ViewBag.Glasovi as Dictionary<int, PostVoteViewModel> ?? new Dictionary<int, PostVoteViewModel>();
 }
 
 <div class="container px-0">
+    @Html.AntiForgeryToken()
+
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
         <div>
             <h1 class="h3 mb-0">Sve objave</h1>
@@ -98,6 +103,13 @@
                                         <span class="me-2">
                                             <span class="fw-semibold">Kategorija:</span> @(p.Kategorija?.Naziv ?? "Nekategorizovano")
                                         </span>
+                                    </div>
+                                    @* prosledjujemo na koji se post glas odnosi i ukljucujemo partial radi prikaza opcija *@
+                                    @{
+                                        var glas = glasovi.GetValueOrDefault(p.PostId) ?? new PostVoteViewModel { PostId = p.PostId };
+                                    }
+                                    <div class="mt-2">
+                                        <partial name="_PostGlasovi" model="glas" />
                                     </div>
                                 </div>
 

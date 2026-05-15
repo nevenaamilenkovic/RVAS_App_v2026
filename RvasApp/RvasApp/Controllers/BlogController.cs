@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RvasApp.Data;
 using RvasApp.Models;
+using RvasApp.Models.ViewModels;
 using System.Security.Claims;
 
 namespace RvasApp.Controllers
@@ -71,7 +72,10 @@ namespace RvasApp.Controllers
                     objave = objave.OrderBy(p => p.Naslov);
                     break;
             }
-            return View(await objave.ToListAsync());
+            var lista = await objave.ToListAsync();
+            //prosledjujemo realno stanje glasova iz baze!
+            ViewBag.Glasovi = await UcitajGlasoveZaPostove(lista.Select(p => p.PostId));
+            return View(lista);
         }
 
         public async Task<IActionResult> Objavi()
@@ -132,8 +136,96 @@ namespace RvasApp.Controllers
 
             if (objava == null)
                 return NotFound();
+            //prosledjujemo realno stanje glasova iz bazena details za odredjeni poost
+            var glasovi = await UcitajGlasoveZaPostove(new[] { objava.PostId });
+            ViewBag.Glas = glasovi.GetValueOrDefault(objava.PostId)
+                ?? new PostVoteViewModel { PostId = objava.PostId };
 
             return View(objava);
+        }
+
+
+        //opcija glasanja!
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Glasaj(int postId, bool isUpvote)
+        {
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(korisnikId))
+                return Unauthorized();
+
+            var post = await _context.Postovi.FindAsync(postId);
+            if (post == null)
+                return NotFound();
+
+            var postojeci = await _context.PostGlasovi
+                .FirstOrDefaultAsync(v => v.PostId == postId && v.KorisnikId == korisnikId);
+            //dodavanje glasa
+            if (postojeci == null)
+            {
+                _context.PostGlasovi.Add(new PostVote
+                {
+                    PostId = postId,
+                    KorisnikId = korisnikId,
+                    IsUpvote = isUpvote
+                });
+            }
+            //ako vec ima glas tog korisnika, glas se uklanja
+            else if (postojeci.IsUpvote == isUpvote)
+            {
+                _context.PostGlasovi.Remove(postojeci);
+            }
+            //promena izbora
+            else
+            {
+                postojeci.IsUpvote = isUpvote;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var rezultat = await UcitajGlasoveZaPostove(new[] { postId });
+            var glas = rezultat[postId];
+
+            //radi AJAX-a
+            return Json(new
+            {
+                upvotes = glas.Upvotes,
+                downvotes = glas.Downvotes,
+                userVote = glas.UserVote == null ? null : (glas.UserVote.Value ? "up" : "down")
+            });
+        }
+
+        private async Task<Dictionary<int, PostVoteViewModel>> UcitajGlasoveZaPostove(IEnumerable<int> postIds)
+        {
+            var ids = postIds.Distinct().ToList();
+            if (ids.Count == 0)
+                return new Dictionary<int, PostVoteViewModel>();
+
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var sviGlasovi = await _context.PostGlasovi
+                .Where(v => ids.Contains(v.PostId))
+                .ToListAsync();
+
+            var rezultat = ids.ToDictionary(
+                id => id,
+                id => new PostVoteViewModel { PostId = id });
+
+            foreach (var grupa in sviGlasovi.GroupBy(v => v.PostId))
+            {
+                var vm = rezultat[grupa.Key];
+                vm.Upvotes = grupa.Count(v => v.IsUpvote);
+                vm.Downvotes = grupa.Count(v => !v.IsUpvote);
+
+                if (!string.IsNullOrEmpty(korisnikId))
+                {
+                    var moj = grupa.FirstOrDefault(v => v.KorisnikId == korisnikId);
+                    if (moj != null)
+                        vm.UserVote = moj.IsUpvote;
+                }
+            }
+
+            return rezultat;
         }
 
         [HttpPost]

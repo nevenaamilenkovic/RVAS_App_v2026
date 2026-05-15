@@ -16,5 +16,7 @@
 
         public int? KategorijaId { get; set; }
         public Kategorija? Kategorija { get; set; }
+        //jedan post moze imati vise glasova, bili oni pozitivni ili negativni!
+        public List<PostVote> Glasovi { get; set; } = new();
     }
 }
