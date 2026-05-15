@@ -13,5 +13,8 @@
 
         //komentari na postu
         public List<Komentar> Komentari { get; set; } = new();
+
+        public int? KategorijaId { get; set; }
+        public Kategorija? Kategorija { get; set; }
     }
 }

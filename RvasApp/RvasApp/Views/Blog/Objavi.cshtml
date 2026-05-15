@@ -34,6 +34,13 @@
                               placeholder="Napisi sadryaj objave..."></textarea>
                     <span asp-validation-for="Sadrzaj" class="text-danger"></span>
                 </div>
+                @* odabir kategorije *@
+                <div>
+                    <label asp-for="KategorijaId" class="form-label fw-semibold">Kategorija</label>
+                    <select asp-for="KategorijaId" asp-items="ViewBag.Kategorije" class="form-select">
+                        <option value="">--Nekategorizovano--</option>
+                    </select>
+                </div>
 
                 <div class="d-flex gap-2">
                     <button type="submit" class="btn btn-success">Objavi</button>

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using RvasApp.Data;
 using RvasApp.Models;
@@ -18,17 +19,70 @@ namespace RvasApp.Controllers
             _context = context;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string pretraga, int? kategorija, string sort)
         {
-            var objave = await _context.Postovi
-                .Include(p => p.Korisnik)
-                .ToListAsync();
+            ViewBag.TrenutnaPretraga=pretraga;
+            ViewBag.TrenutnaKategorija=kategorija;
+            ViewBag.TrenutniSort=sort;
 
-            return View(objave);
+            //Da napuni dropdown za izbor kategorije
+            ViewBag.Kategorije = new SelectList(
+                await _context.Kategorije.ToListAsync(),
+                "KategorijaId",//value mewmber
+                "Naziv",//display member
+                kategorija//da sacuvamo trenutno odabranu io posle submita
+            );
+
+            //uklonjena kljucna rec await!
+            var objave = _context.Postovi
+                .Include(p => p.Korisnik)
+                .Include(p => p.Kategorija)
+                //.ToListAsync();
+                .AsQueryable();
+
+            //pretraga po naslovu
+            if (!string.IsNullOrEmpty(pretraga))
+            {
+                objave = objave
+                    .Where(p => p.Naslov.StartsWith(pretraga));
+            }
+
+            //filtriranje po pripadajucoj kategoriji
+            if (kategorija.HasValue)
+            {
+                objave = objave
+                    .Where(p => p.KategorijaId == kategorija);
+            }
+
+            //sortiranje po nazivu i datumu
+            switch (sort)
+            {
+                case "naslov_desc":
+                    objave = objave.OrderByDescending(p => p.Naslov);
+                    break;
+                case "datum_desc":
+                    objave = objave.OrderByDescending(p => p.DatumKreiranja);
+                    break;
+                case "datum_asc":
+                    objave = objave.OrderBy(p => p.DatumKreiranja);
+                    break;
+                //podrazumevano po naslovu rastuce, mada moze i po datumu kako god
+                default:
+                    objave = objave.OrderBy(p => p.Naslov);
+                    break;
+            }
+            return View(await objave.ToListAsync());
         }
 
         public async Task<IActionResult> Objavi()
         {
+            //radi kategorija
+            ViewBag.Kategorije = new SelectList(
+                await _context.Kategorije.ToListAsync(),
+                "KategorijaId",//value mewmber
+                "Naziv"//display member
+            );
+
             return View();
         }
 
@@ -44,12 +98,21 @@ namespace RvasApp.Controllers
                     Naslov = objava.Naslov,
                     Sadrzaj = objava.Sadrzaj,
                     DatumKreiranja = DateTime.UtcNow,
-                    KorisnikId = korisnikId
+                    KorisnikId = korisnikId,
+                    KategorijaId=objava.KategorijaId
                 };
                 _context.Postovi.Add(p);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            //ponovo da ne bi dropdown bio prazan ako dodje do neke greskee
+            ViewBag.Kategorije = new SelectList(
+                await _context.Kategorije.ToListAsync(),
+                "KategorijaId",//value mewmber
+                "Naziv"//display member
+            );
+
             return View(objava);
         }
 
