@@ -140,6 +140,9 @@ namespace RvasApp.Controllers
             var glasovi = await UcitajGlasoveZaPostove(new[] { objava.PostId });
             ViewBag.Glas = glasovi.GetValueOrDefault(objava.PostId)
                 ?? new PostVoteViewModel { PostId = objava.PostId };
+            //termin 11 zadatak sa vezbi
+            ViewBag.KomentarGlasovi = await UcitajGlasoveZaKomentare(
+                objava.Komentari.Select(k => k.KomentarId));
 
             return View(objava);
         }
@@ -212,6 +215,87 @@ namespace RvasApp.Controllers
                 id => new PostVoteViewModel { PostId = id });
 
             foreach (var grupa in sviGlasovi.GroupBy(v => v.PostId))
+            {
+                var vm = rezultat[grupa.Key];
+                vm.Upvotes = grupa.Count(v => v.IsUpvote);
+                vm.Downvotes = grupa.Count(v => !v.IsUpvote);
+
+                if (!string.IsNullOrEmpty(korisnikId))
+                {
+                    var moj = grupa.FirstOrDefault(v => v.KorisnikId == korisnikId);
+                    if (moj != null)
+                        vm.UserVote = moj.IsUpvote;
+                }
+            }
+
+            return rezultat;
+        }
+
+        //termin 11 zadatak sa vezbi
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GlasajNaKomentar(int komentarId, bool isUpvote)
+        {
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(korisnikId))
+                return Unauthorized();
+
+            var komentar = await _context.Komentari.FindAsync(komentarId);
+            if (komentar == null)
+                return NotFound();
+
+            var postojeci = await _context.KomentarGlasovi
+                .FirstOrDefaultAsync(v => v.KomentarId == komentarId && v.KorisnikId == korisnikId);
+
+            if (postojeci == null)
+            {
+                _context.KomentarGlasovi.Add(new KomentarVote
+                {
+                    KomentarId = komentarId,
+                    KorisnikId = korisnikId,
+                    IsUpvote = isUpvote
+                });
+            }
+            else if (postojeci.IsUpvote == isUpvote)
+            {
+                _context.KomentarGlasovi.Remove(postojeci);
+            }
+            else
+            {
+                postojeci.IsUpvote = isUpvote;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var rezultat = await UcitajGlasoveZaKomentare(new[] { komentarId });
+            var glas = rezultat[komentarId];
+
+            return Json(new
+            {
+                upvotes = glas.Upvotes,
+                downvotes = glas.Downvotes,
+                userVote = glas.UserVote == null ? null : (glas.UserVote.Value ? "up" : "down")
+            });
+        }
+
+        //termin 11 zadatak sa vezbi
+        private async Task<Dictionary<int, KomentarVoteViewModel>> UcitajGlasoveZaKomentare(IEnumerable<int> komentarIds)
+        {
+            var ids = komentarIds.Distinct().ToList();
+            if (ids.Count == 0)
+                return new Dictionary<int, KomentarVoteViewModel>();
+
+            var korisnikId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            var sviGlasovi = await _context.KomentarGlasovi
+                .Where(v => ids.Contains(v.KomentarId))
+                .ToListAsync();
+
+            var rezultat = ids.ToDictionary(
+                id => id,
+                id => new KomentarVoteViewModel { KomentarId = id });
+
+            foreach (var grupa in sviGlasovi.GroupBy(v => v.KomentarId))
             {
                 var vm = rezultat[grupa.Key];
                 vm.Upvotes = grupa.Count(v => v.IsUpvote);

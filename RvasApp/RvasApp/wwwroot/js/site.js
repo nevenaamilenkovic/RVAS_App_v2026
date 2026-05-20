@@ -100,4 +100,64 @@
                 });
             });
     });
+
+    //termin 10(3s2b)/11(3s2a) zadatak sa vezbi isti AJAX obrazac kao za postove
+    function updateKomentarVoteUi(container, data) {
+        var upBtn = container.querySelector('.komentar-glas-up');
+        var downBtn = container.querySelector('.komentar-glas-down');
+        var upCount = container.querySelector('.komentar-upvote-count');
+        var downCount = container.querySelector('.komentar-downvote-count');
+
+        if (upCount) upCount.textContent = data.upvotes;
+        if (downCount) downCount.textContent = data.downvotes;
+
+        setButtonState(upBtn, data.userVote === 'up', 'up');
+        setButtonState(downBtn, data.userVote === 'down', 'down');
+    }
+
+    document.addEventListener('click', function (e) {
+        var btn = e.target.closest('.komentar-glas-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        var container = btn.closest('.komentar-glasovi');
+        if (!container) return;
+
+        var komentarId = container.getAttribute('data-komentar-id');
+        var isUpvote = btn.getAttribute('data-vote') === 'up';
+        var token = getAntiForgeryToken();
+
+        btn.disabled = true;
+        var sibling = container.querySelector('.komentar-glas-btn:not([disabled])');
+        if (sibling && sibling !== btn) sibling.disabled = true;
+
+        var body = new URLSearchParams();
+        body.append('komentarId', komentarId);
+        body.append('isUpvote', isUpvote);
+        body.append('__RequestVerificationToken', token);
+
+        fetch('/Blog/GlasajNaKomentar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'RequestVerificationToken': token
+            },
+            body: body.toString()
+        })
+            .then(function (response) {
+                if (!response.ok) throw new Error('Glasanje nije uspelo');
+                return response.json();
+            })
+            .then(function (data) {
+                updateKomentarVoteUi(container, data);
+            })
+            .catch(function () {
+                alert('Glasanje na komentaru nije uspelo. Pokusajte ponovo.');
+            })
+            .finally(function () {
+                container.querySelectorAll('.komentar-glas-btn').forEach(function (b) {
+                    b.disabled = false;
+                });
+            });
+    });
 })();

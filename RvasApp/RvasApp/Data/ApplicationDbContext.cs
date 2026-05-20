@@ -18,6 +18,7 @@ namespace RvasApp.Data
         public DbSet<Komentar> Komentari { get; set; }
         public DbSet<Kategorija> Kategorije { get; set; }
         public DbSet<PostVote> PostGlasovi { get; set; }
+        public DbSet<KomentarVote> KomentarGlasovi { get; set; }//termin 11 zadatak sa vezbi
 
 
         protected override void OnModelCreating(ModelBuilder builder)
@@ -64,6 +65,23 @@ namespace RvasApp.Data
             //jedinstveni indeks samo jedan glas/vote moze po korisniku
             builder.Entity<PostVote>()
                 .HasIndex(v => new { v.PostId, v.KorisnikId })
+                .IsUnique();
+
+            //termin 11 zadatak sa vezbi
+            builder.Entity<KomentarVote>()
+                .HasOne(v => v.Komentar)
+                .WithMany(k => k.Glasovi)
+                .HasForeignKey(v => v.KomentarId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<KomentarVote>()
+                .HasOne(v => v.Korisnik)
+                .WithMany()
+                .HasForeignKey(v => v.KorisnikId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<KomentarVote>()
+                .HasIndex(v => new { v.KomentarId, v.KorisnikId })
                 .IsUnique();
 
             //predefinisane kategorije

@@ -1,0 +1,22 @@
+@model RvasApp.Models.ViewModels.KomentarVoteViewModel
+@* termin 11 zadatak sa vezbi *@
+@* partial za prikaz opcija za vote po komentaru *@
+<div class="komentar-glasovi d-inline-flex align-items-center gap-1 mt-1"
+     data-komentar-id="@Model.KomentarId">
+    <button type="button"
+            class="btn btn-sm komentar-glas-btn komentar-glas-up @(Model.UserVote == true ? "btn-success" : "btn-outline-success")"
+            data-vote="up"
+            title="Glasaj za"
+            aria-pressed="@(Model.UserVote == true ? "true" : "false")">
+        <span aria-hidden="true">▲</span>
+        <span class="komentar-upvote-count">@Model.Upvotes</span>
+    </button>
+    <button type="button"
+            class="btn btn-sm komentar-glas-btn komentar-glas-down @(Model.UserVote == false ? "btn-danger" : "btn-outline-danger")"
+            data-vote="down"
+            title="Glasaj protiv"
+            aria-pressed="@(Model.UserVote == false ? "true" : "false")">
+        <span aria-hidden="true">▼</span>
+        <span class="komentar-downvote-count">@Model.Downvotes</span>
+    </button>
+</div>

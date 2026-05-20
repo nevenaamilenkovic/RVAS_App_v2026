@@ -21,5 +21,7 @@
         //jedan komentar moze imati vise odgovora
         public List<Komentar> Odgovori { get; set; } = new();
 
+        //jedan komentar moze imati vise glasovaa
+        public List<KomentarVote> Glasovi { get; set; } = new();
     }
 }

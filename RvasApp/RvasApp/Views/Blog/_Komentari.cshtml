@@ -1,9 +1,12 @@
 ﻿@* partial view za komentare! *@
 @model IEnumerable<RvasApp.Models.Komentar>
+@using RvasApp.Models.ViewModels
 
 @{
     var dubina = ViewData["Dubina"] as int? ?? 0;
     var maksimalnaDubina = ViewData["MaxDubina"] as int? ?? 1;
+    var komentarGlasovi = ViewBag.KomentarGlasovi as Dictionary<int, KomentarVoteViewModel>
+        ?? new Dictionary<int, KomentarVoteViewModel>();
 }
 
 @if (Model == null || !Model.Any())
@@ -23,6 +26,13 @@ else
                     · @k.DatumPostavljanja.ToString("dd.MM.yyyy")
                 </div>
                 <div style="white-space: pre-wrap;">@k.Sadrzaj</div>
+
+                @* opcije za glasanje po komentaru t11 vezbe zadatak *@
+                @{
+                    var glasKomentara = komentarGlasovi.GetValueOrDefault(k.KomentarId)
+                        ?? new KomentarVoteViewModel { KomentarId = k.KomentarId };
+                }
+                <partial name="_KomentarGlasovi" model="glasKomentara" />
 
                 @if (dubina < maksimalnaDubina)
                 {
