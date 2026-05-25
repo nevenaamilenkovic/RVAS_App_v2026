@@ -1,0 +1,44 @@
+﻿@model IEnumerable<RvasApp.Models.Kurs>
+@{
+    var lista = Model?.ToList() ?? new List<RvasApp.Models.Kurs>();
+}
+
+@if (!lista.Any())
+{
+    <p>Nema kurseva.</p>
+}
+else
+{
+    <p>
+        <input type="text" id="kurseviSearch" placeholder="Naziv..." />
+        <select id="kurseviFilterPolaznici">
+            <option value="">Svi</option>
+            @foreach (var broj in lista.Where(k => k.MaksimalanBrojPolaznika != null).Select(k => k.MaksimalanBrojPolaznika!.Value).Distinct().OrderBy(x => x))
+            {
+                <option value="do @broj">do @broj</option>
+            }
+        </select>
+    </p>
+
+    <table id="kurseviTable">
+        <thead>
+            <tr>
+                <th>Naziv</th>
+                <th>Datum</th>
+                <th>Polaznika</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var k in lista)
+            {
+                <tr>
+                    <td>@k.Naziv</td>
+                    <td data-order="@(k.DatumPocetka?.Ticks ?? 0)">
+                        @(k.DatumPocetka?.ToString("dd.MM.yyyy")) - @(k.DatumZavrsetka?.ToString("dd.MM.yyyy"))
+                    </td>
+                    <td data-order="@(k.MaksimalanBrojPolaznika ?? 0)">do @k.MaksimalanBrojPolaznika</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
